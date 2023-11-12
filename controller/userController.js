@@ -4,16 +4,6 @@ const User = require('../model/userModel')
 const sendToken = require('../utils/jwtToken')
 const jwt = require('jsonwebtoken');
 
-//Register a User
-exports.registerUser = catchAsyncError(async (req, res, next) => {
-
-    const { name, email, password } = req.body
-    const user = await User.create({
-        name, email, password,
-    })
-
-    sendToken(user, 201, res)
-})
 
 
 // Login User
@@ -90,7 +80,6 @@ exports.getAppointments = catchAsyncError(async (req, res, next) => {
 
 exports.refreshToken = catchAsyncError(async (req, res, next) => {
     try {
-        // Extract the refresh token from the request header
         console.log("TRY CALLED");
         const authHeader = req.headers['authorization'];
 
@@ -111,27 +100,22 @@ exports.refreshToken = catchAsyncError(async (req, res, next) => {
             });
         });
 
-        // Verify the refresh token
         const decodedData = await verifyPromise;
 
 
-        // Assuming you have a method to get the user based on the user ID
         const user = await User.findById(decodedData.id);
 
         if (!user) {
             return next(new ErrorHandler("User not found", 404));
         }
 
-        // Generate a new access token with a renewed expiration time
         const newAccessToken = user.getJWTToken();
 
-        // Send the new access token in the response
         res.status(200).json({
             success: true,
             accessToken: newAccessToken,
         });
     } catch (err) {
-        // Handle errors
         console.log(err);
         return next(new ErrorHandler("Invalid Refresh Token", 401));
     }
